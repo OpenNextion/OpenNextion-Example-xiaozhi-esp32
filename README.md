@@ -2,6 +2,23 @@
 
 (English | [中文](README_zh.md) | [日本語](README_ja.md))
 
+This project is forked from the `xiaozhi-esp32` project and has been adapted to support the OpenNextion G-series hardware: the 2.8-inch capacitive screen (ONX2432G028) and the 3.5-inch capacitive screen (ONX3248G035).
+<div style="display: flex; justify-content: space-between;">
+<img src="docs/v1/OpenNextion-ONX2432G028.jpg"  width="600">
+<img src="docs/v1/OpenNextion-ONX3248G035.jpg"  width="600">
+</div>
+
+#### Board Model Adaptation File Path：
+2.8-inch capacitive screen (ONX2432G028)：/main/boards/OpenNextion_ONX2432G028
+3.5-inch capacitive screen (ONX3248G035)：/main/boards/OpenNextion_ONX3248G035
+
+#### Product Purchase Link：
+[2.8-inch capacitive screen (ONX2432G028)](https://itead.cc/product/open-nextion-2-8-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+[3.5-inch capacitive screen (ONX3248G035)](https://itead.cc/product/open-nextion-3-5-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+#### Product Information：
+[2.8-inch capacitive screen (ONX2432G028)](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028)
+[3.5-inch capacitive screen (ONX3248G035)](https://github.com/OpenNextion/OpenNextion-SKU-ONX3248G035)
+
 ## Introduction
 
 👉 [Human: Give AI a camera vs AI: Instantly finds out the owner hasn't washed hair for three days【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)

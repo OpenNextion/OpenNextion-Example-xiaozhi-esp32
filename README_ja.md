@@ -2,6 +2,23 @@
 
 （日本語 | [中文](README_zh.md) | [English](README.md)）
 
+本プロジェクトは `xiaozhi-esp32` プロジェクトからフォークされたものであり、OpenNextion Gシリーズのハードウェア（2.8インチ静電容量式スクリーン ONX2432G028、および3.5インチ静電容量式スクリーン ONX3248G035）に対応するよう改修されています。
+<div style="display: flex; justify-content: space-between;">
+<img src="docs/v1/OpenNextion-ONX2432G028.jpg"  width="600">
+<img src="docs/v1/OpenNextion-ONX3248G035.jpg"  width="600">
+</div>
+
+#### ボードモデル適応ファイルパス：
+2.8インチ静電容量式タッチスクリーン (ONX2432G028)：/main/boards/OpenNextion_ONX2432G028
+3.5インチ静電容量式タッチスクリーン (ONX3248G035)：/main/boards/OpenNextion_ONX3248G035
+
+#### 商品購入リンク：
+[2.8インチ静電容量式タッチスクリーン (ONX2432G028)](https://itead.cc/product/open-nextion-2-8-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+[3.5インチ静電容量式タッチスクリーン (ONX3248G035)](https://itead.cc/product/open-nextion-3-5-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+#### 製品情報：
+[2.8インチ静電容量式タッチスクリーン (ONX2432G028)](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028)
+[3.5インチ静電容量式タッチスクリーン (ONX3248G035)](https://github.com/OpenNextion/OpenNextion-SKU-ONX3248G035)
+
 ## はじめに
 
 👉 [人間：AIにカメラを装着 vs AI：その場で飼い主が3日間髪を洗っていないことを発見【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)

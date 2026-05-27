@@ -2,6 +2,23 @@
 
 （中文 | [English](README.md) | [日本語](README_ja.md)）
 
+本项目是 fork 自 xiaozhi-esp32 项目，适配了 OpenNextion G系列 2.8寸电容屏 ONX2432G028 和 G系列 3.5寸电容屏 ONX3248G035 硬件。
+<div style="display: flex; justify-content: space-between;">
+<img src="docs/v1/OpenNextion-ONX2432G028.jpg"  width="600">
+<img src="docs/v1/OpenNextion-ONX3248G035.jpg"  width="600">
+</div>
+
+#### 板型适配文件路径：
+2.8寸电容屏 ONX2432G028：/main/boards/OpenNextion_ONX2432G028
+3.5寸电容屏 ONX3248G035：/main/boards/OpenNextion_ONX3248G035
+
+#### 产品购买链接：
+[2.8寸电容屏 ONX2432G028](https://itead.cc/product/open-nextion-2-8-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+[3.5寸电容屏 ONX3248G035](https://itead.cc/product/open-nextion-3-5-genius-series-esp32-s3-lcd-touchscreen-development-board/)
+#### 产品资料：
+[2.8寸电容屏 ONX2432G028](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028)
+[3.5寸电容屏 ONX3248G035](https://github.com/OpenNextion/OpenNextion-SKU-ONX3248G035)
+
 ## 介绍
 
 👉 [人类：给 AI 装摄像头 vs AI：当场发现主人三天没洗头【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)

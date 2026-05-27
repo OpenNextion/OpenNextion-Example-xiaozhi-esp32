@@ -1,0 +1,57 @@
+#ifndef _BOARD_CONFIG_H_
+#define _BOARD_CONFIG_H_
+
+#include <driver/gpio.h>
+
+#define AUDIO_INPUT_SAMPLE_RATE  24000
+#define AUDIO_OUTPUT_SAMPLE_RATE 24000
+
+#define AUDIO_I2C_SDA_PIN GPIO_NUM_8
+#define AUDIO_I2C_SCL_PIN GPIO_NUM_7
+
+#define AUDIO_I2S_MIC_GPIO_SCK  GPIO_NUM_19
+#define AUDIO_I2S_MIC_GPIO_DIN  GPIO_NUM_20
+
+#define AUDIO_I2S_SPK_GPIO_WS GPIO_NUM_16
+#define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_14
+#define AUDIO_I2S_SPK_GPIO_DOUT GPIO_NUM_15
+
+#define BUILTIN_LED_GPIO GPIO_NUM_NC
+#define BOOT_BUTTON_GPIO GPIO_NUM_0
+
+#define DISPLAY_OFFSET_X 0
+#define DISPLAY_OFFSET_Y 0
+#define DISPLAY_WIDTH    240
+#define DISPLAY_HEIGHT   320
+#define DISPLAY_SWAP_XY  false
+#define DISPLAY_MIRROR_X false
+#define DISPLAY_MIRROR_Y false
+
+#define DISPLAY_BACKLIGHT_PIN GPIO_NUM_6
+#define DISPLAY_BACKLIGHT_OUTPUT_INVERT false
+
+#define TP_PIN_NUM_TP_SDA   GPIO_NUM_8
+#define TP_PIN_NUM_TP_SCL   GPIO_NUM_7
+#define TP_PIN_NUM_TP_RST   PCF8574_LCD_RST_BIT
+#define TP_PIN_NUM_TP_INT   PCF8574_TP_INT_BIT
+
+
+// Pin Definitions 
+#define DISPLAY_CS_PIN        GPIO_NUM_2
+#define DISPLAY_MOSI_PIN      GPIO_NUM_1
+#define DISPLAY_CLK_PIN       GPIO_NUM_5
+#define DISPLAY_DC_PIN        GPIO_NUM_3
+#define DISPLAY_RST_PIN       GPIO_NUM_NC
+
+// PCF8574 I/O Expander
+//Note: The address of the PCF8574A is 0x38, and the I2C clock frequency must not exceed 100 kHz.
+#define PCF8574_ADDR          0x38
+#define PCF8574_I2S_CTRL_BIT  0
+#define PCF8574_RTC_INT_BIT   1
+#define PCF8574_CHG_INT_BIT   2
+#define PCF8574_CAM_PWDN_BIT  3
+#define PCF8574_TP_INT_BIT    4
+#define PCF8574_LCD_RST_BIT   5
+#define PCF8574_SDCSL_BIT     6
+
+#endif // _BOARD_CONFIG_H_

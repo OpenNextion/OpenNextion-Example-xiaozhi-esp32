@@ -563,6 +563,12 @@ choice BOARD_TYPE
     config BOARD_TYPE_AI_VOX3
         bool "NULLLAB-AI-VOX3"
         depends on IDF_TARGET_ESP32S3
+    config BOARD_TYPE_OPENNEXTION_ONX2432G028
+        bool "OpenNextion ONX2432G028"
+        depends on IDF_TARGET_ESP32S3
+    config BOARD_TYPE_OPENNEXTION_ONX3248G035
+        bool "OpenNextion ONX3248G035"
+        depends on IDF_TARGET_ESP32S3
 endchoice
 
 choice
