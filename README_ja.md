@@ -1,186 +1,179 @@
-# MCP ベースのチャットボット
+# OpenNextion XiaoZhi AI チャットボット
 
-（日本語 | [中文](README_zh.md) | [English](README.md)）
+([English](README.md) | [中文](README_zh.md) | [日本語](README_ja.md))
 
-本プロジェクトは `xiaozhi-esp32` プロジェクトからフォークされたものであり、OpenNextion Gシリーズのハードウェア（2.8インチ静電容量式スクリーン ONX2432G028、および3.5インチ静電容量式スクリーン ONX3248G035）に対応するよう改修されています。
-<div style="display: flex; justify-content: space-between;">
-<img src="docs/v1/OpenNextion-ONX2432G028.jpg"  width="600">
-<img src="docs/v1/OpenNextion-ONX3248G035.jpg"  width="600">
-</div>
+対応する OpenNextion ESP32-S3 タッチスクリーンを XiaoZhi AI 音声アシスタントにします。画面に合うファームウェアを書き込み、Wi-Fi に接続すれば、画面のタップまたは BOOT ボタンで会話を始められます。
 
-#### ボードモデル適応ファイルパス：
-2.8インチ静電容量式タッチスクリーン (ONX2432G028)：/main/boards/OpenNextion_ONX2432G028
-3.5インチ静電容量式タッチスクリーン (ONX3248G035)：/main/boards/OpenNextion_ONX3248G035
+<!-- MEDIA TODO — ヒーロー画像または動画。推奨パス: docs/images/opennextion-xiaozhi-hero.jpg
+     完成したデスクトップケースに収めた、電源オンの OpenNextion パネルを表示。推奨幅: 820 px。 -->
 
-#### 商品購入リンク：
-[2.8インチ静電容量式タッチスクリーン (ONX2432G028)](https://itead.cc/product/open-nextion-2-8-genius-series-esp32-s3-lcd-touchscreen-development-board/)
-[3.5インチ静電容量式タッチスクリーン (ONX3248G035)](https://itead.cc/product/open-nextion-3-5-genius-series-esp32-s3-lcd-touchscreen-development-board/)
-#### 製品情報：
-[2.8インチ静電容量式タッチスクリーン (ONX2432G028)](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028)
-[3.5インチ静電容量式タッチスクリーン (ONX3248G035)](https://github.com/OpenNextion/OpenNextion-SKU-ONX3248G035)
+<p align="center">
+  <img src="docs/v1/OpenNextion-ONX2432G028.jpg" alt="OpenNextion ONX2432G028 2.8-inch touchscreen" width="390">
+  <img src="docs/v1/OpenNextion-ONX3248G035.jpg" alt="OpenNextion ONX3248G035 3.5-inch touchscreen" width="390">
+</p>
 
-## はじめに
+> このプロジェクトは [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) の OpenNextion ハードウェア向けポートです。以下の 2 機種のみを対象としています。
 
-👉 [人間：AIにカメラを装着 vs AI：その場で飼い主が3日間髪を洗っていないことを発見【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)
+## 対応ハードウェア
 
-👉 [手作りでAIガールフレンドを作る、初心者入門チュートリアル【bilibili】](https://www.bilibili.com/video/BV1XnmFYLEJN/)
+| OpenNextion モデル | ディスプレイ | 向き | ファームウェアのボード名 | 状態 |
+| --- | --- | --- | --- | --- |
+| [ONX2432G028][onx2432g028] | 2.8 インチ静電容量式タッチ、240 × 320 | 縦向き | <code>OpenNextion-ONX2432G028</code> | 対応 |
+| [ONX3248G035][onx3248g035] | 3.5 インチ静電容量式タッチ、320 × 480 | 縦向き | <code>OpenNextion-ONX3248G035</code> | 対応 |
 
-シャオジーAIチャットボットは音声インタラクションの入口として、Qwen / DeepSeekなどの大規模モデルのAI能力を活用し、MCPプロトコルを通じてマルチエンド制御を実現します。
+**パネルに記載された型番と完全に一致するファームウェアだけを使用してください。ONX2432G028 と ONX3248G035 のファームウェアは相互に使用できません。**
 
-<img src="docs/mcp-based-graph.jpg" alt="MCPであらゆるものを制御" width="320">
+このポートはディスプレイ、静電容量式タッチ、デュアルマイク、スピーカー、Wi-Fi をサポートします。2.4 GHz Wi-Fi が必要です。
 
-## バージョンノート
+## 始める前に
 
-現在のv2バージョンはv1パーティションテーブルと互換性がないため、v1からv2へOTAでアップグレードすることはできません。パーティションテーブルの詳細については、[partitions/v2/README.md](partitions/v2/README.md)をご参照ください。
+- 上表にある対応 OpenNextion パネル。
+- 充電専用ではないデータ通信対応 USB ケーブル。
+- Windows、macOS、または Linux のコンピューター。
+- 2.4 GHz Wi-Fi ネットワーク。ESP32-S3 は 5 GHz 専用ネットワークには接続できません。
+- 既定の XiaoZhi サービスを使う場合は [xiaozhi.me](https://xiaozhi.me) アカウント。
 
-v1を実行しているすべてのハードウェアは、ファームウェアを手動で書き込むことでv2にアップグレードできます。
+## クイックスタート
 
-v1の安定版は1.9.2です。`git checkout v1`でv1に切り替えることができます。v1ブランチは2026年2月まで継続的にメンテナンスされます。
+### 1. 正しいファームウェアを入手する
 
-### 実装済み機能
+プロジェクトの [GitHub Releases](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases) から最新ファームウェアをダウンロードします。現在の <code>v2.2.6</code> 初回書き込みイメージは次のとおりです。
 
-- Wi-Fi / ML307 Cat.1 4G
-- オフライン音声ウェイクアップ [ESP-SR](https://github.com/espressif/esp-sr)
-- 2種類の通信プロトコルに対応（[Websocket](docs/websocket.md) または MQTT+UDP）
-- OPUSオーディオコーデックを採用
-- ストリーミングASR + LLM + TTSアーキテクチャに基づく音声インタラクション
-- 話者認識、現在話している人を識別 [3D Speaker](https://github.com/modelscope/3D-Speaker)
-- OLED / LCDディスプレイ、表情表示対応
-- バッテリー表示と電源管理
-- 多言語対応（中国語、英語、日本語）
-- ESP32-C3、ESP32-S3、ESP32-P4チッププラットフォーム対応
-- デバイス側MCPによるデバイス制御（音量・明るさ調整、アクション制御など）
-- クラウド側MCPで大規模モデル能力を拡張（スマートホーム制御、PCデスクトップ操作、知識検索、メール送受信など）
-- カスタマイズ可能なウェイクワード、フォント、絵文字、チャット背景、オンラインWeb編集に対応 ([カスタムアセットジェネレーター](https://github.com/78/xiaozhi-assets-generator))
+| パネル | ダウンロードするファイル |
+| --- | --- |
+| ONX2432G028 | [<code>xiaozhi_V2.2.6_merged_ONX2432G028_en_Jarvis.bin</code>](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases/download/v2.2.6/xiaozhi_V2.2.6_merged_ONX2432G028_en_Jarvis.bin) |
+| ONX3248G035 | [<code>xiaozhi_V2.2.6_merged_ONX3248G035_en_Jarvis.bin</code>](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases/download/v2.2.6/xiaozhi_V2.2.6_merged_ONX3248G035_en_Jarvis.bin) |
 
-## ハードウェア
+ファイル名の <code>ONX...</code> 型番がパネルと一致するものだけを選択してください。他の XiaoZhi ボード用ファームウェアは使用しないでください。
 
-### ブレッドボード手作り実践
+### 2. パネルに書き込む
 
-Feishuドキュメントチュートリアルをご覧ください：
+<!-- MEDIA TODO — 書き込み手順画像。推奨パス: docs/images/opennextion-xiaozhi-flashing.jpg
+     USB 接続したパネルと、正しいモデルが選択された書き込みツールを表示。推奨幅: 620 px。 -->
 
-👉 [「シャオジーAIチャットボット百科事典」](https://ccnphfhqs21z.feishu.cn/wiki/F5krwD16viZoF0kKkvDcrZNYnhb?from=from_copylink)
+1. データ通信対応 USB ケーブルでパネルをコンピューターへ接続します。
+2. [初心者向け書き込みガイド][flashing-guide]に従い、対応する <code>.bin</code> ファイルをアドレス <code>0x0</code> に書き込みます。
+3. 完了後、パネルが再起動するまで待ちます。
 
-ブレッドボードのデモ：
+シリアルデバイスが表示されない場合は、USB ケーブルまたはポートを変更してください。充電専用ケーブルもあります。書き込みツールが接続できない場合は、BOOT と Reset ボタンでダウンロードモードにしてから再試行してください。
 
-![ブレッドボードデモ](docs/v1/wiring2.jpg)
+### 3. Wi-Fi を設定する
 
-### 70種類以上のオープンソースハードウェアに対応（一部のみ表示）
+<!-- MEDIA TODO — Wi-Fi 設定画像。推奨パス: docs/images/opennextion-xiaozhi-wifi-setup.jpg
+     Xiaozhi-xxxx ホットスポットおよび/または http://192.168.4.1 の設定ページを表示。推奨幅: 620 px。 -->
 
-- <a href="https://oshwhub.com/li-chuang-kai-fa-ban/li-chuang-shi-zhan-pai-esp32-s3-kai-fa-ban" target="_blank" title="立創・実戦派 ESP32-S3 開発ボード">立創・実戦派 ESP32-S3 開発ボード</a>
-- <a href="https://github.com/espressif/esp-box" target="_blank" title="楽鑫 ESP32-S3-BOX3">楽鑫 ESP32-S3-BOX3</a>
-- <a href="https://docs.m5stack.com/zh_CN/core/CoreS3" target="_blank" title="M5Stack CoreS3">M5Stack CoreS3</a>
-- <a href="https://docs.m5stack.com/en/atom/Atomic%20Echo%20Base" target="_blank" title="AtomS3R + Echo Base">M5Stack AtomS3R + Echo Base</a>
-- <a href="https://gf.bilibili.com/item/detail/1108782064" target="_blank" title="マジックボタン2.4">マジックボタン2.4</a>
-- <a href="https://www.waveshare.net/shop/ESP32-S3-Touch-AMOLED-1.8.htm" target="_blank" title="微雪電子 ESP32-S3-Touch-AMOLED-1.8">微雪電子 ESP32-S3-Touch-AMOLED-1.8</a>
-- <a href="https://github.com/Xinyuan-LilyGO/T-Circle-S3" target="_blank" title="LILYGO T-Circle-S3">LILYGO T-Circle-S3</a>
-- <a href="https://oshwhub.com/tenclass01/xmini_c3" target="_blank" title="エビ兄さん Mini C3">エビ兄さん Mini C3</a>
-- <a href="https://oshwhub.com/movecall/cuican-ai-pendant-lights-up-y" target="_blank" title="Movecall CuiCan ESP32S3">CuiCan AIペンダント</a>
-- <a href="https://github.com/WMnologo/xingzhi-ai" target="_blank" title="無名科技Nologo-星智-1.54">無名科技Nologo-星智-1.54TFT</a>
-- <a href="https://www.seeedstudio.com/SenseCAP-Watcher-W1-A-p-5979.html" target="_blank" title="SenseCAP Watcher">SenseCAP Watcher</a>
-- <a href="https://www.bilibili.com/video/BV1BHJtz6E2S/" target="_blank" title="ESP-HI 超低コストロボット犬">ESP-HI 超低コストロボット犬</a>
+初回起動時、または保存済み Wi-Fi を使用できない場合、デバイスは <code>Xiaozhi-xxxx</code> という設定用ホットスポットを作成します。
 
-<div style="display: flex; justify-content: space-between;">
-  <a href="docs/v1/lichuang-s3.jpg" target="_blank" title="立創・実戦派 ESP32-S3 開発ボード">
-    <img src="docs/v1/lichuang-s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/espbox3.jpg" target="_blank" title="楽鑫 ESP32-S3-BOX3">
-    <img src="docs/v1/espbox3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/m5cores3.jpg" target="_blank" title="M5Stack CoreS3">
-    <img src="docs/v1/m5cores3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/atoms3r.jpg" target="_blank" title="AtomS3R + Echo Base">
-    <img src="docs/v1/atoms3r.jpg" width="240" />
-  </a>
-  <a href="docs/v1/magiclick.jpg" target="_blank" title="マジックボタン2.4">
-    <img src="docs/v1/magiclick.jpg" width="240" />
-  </a>
-  <a href="docs/v1/waveshare.jpg" target="_blank" title="微雪電子 ESP32-S3-Touch-AMOLED-1.8">
-    <img src="docs/v1/waveshare.jpg" width="240" />
-  </a>
-  <a href="docs/v1/lilygo-t-circle-s3.jpg" target="_blank" title="LILYGO T-Circle-S3">
-    <img src="docs/v1/lilygo-t-circle-s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/xmini-c3.jpg" target="_blank" title="エビ兄さん Mini C3">
-    <img src="docs/v1/xmini-c3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/movecall-cuican-esp32s3.jpg" target="_blank" title="CuiCan">
-    <img src="docs/v1/movecall-cuican-esp32s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/wmnologo_xingzhi_1.54.jpg" target="_blank" title="無名科技Nologo-星智-1.54">
-    <img src="docs/v1/wmnologo_xingzhi_1.54.jpg" width="240" />
-  </a>
-  <a href="docs/v1/sensecap_watcher.jpg" target="_blank" title="SenseCAP Watcher">
-    <img src="docs/v1/sensecap_watcher.jpg" width="240" />
-  </a>
-  <a href="docs/v1/esp-hi.jpg" target="_blank" title="ESP-HI 超低コストロボット犬">
-    <img src="docs/v1/esp-hi.jpg" width="240" />
-  </a>
-</div>
+1. スマートフォンまたはコンピューターで <code>Xiaozhi-xxxx</code> Wi-Fi に接続します。
+2. 設定ページが自動的に開かない場合は <http://192.168.4.1> を開きます。
+3. 2.4 GHz の自宅 Wi-Fi を選び、パスワードを入力します。
+4. 保存し、デバイスが Wi-Fi へ接続して起動を続けるまで待ちます。
 
-## ソフトウェア
+設定用ホットスポットはオープンネットワークです。信頼できる場所で設定し、完了後は設定モードを終了してください。
 
-### ファームウェア書き込み
+### 4. 有効化して会話を始める
 
-初心者の方は、まず開発環境を構築せずに書き込み可能なファームウェアを使用することをおすすめします。
+<!-- MEDIA TODO — 有効化または利用画像。推奨パス: docs/images/opennextion-xiaozhi-activation.jpg
+     有効化画面、またはタッチで会話を開始する様子を表示。推奨幅: 620 px。 -->
 
-ファームウェアはデフォルトで公式 [xiaozhi.me](https://xiaozhi.me) サーバーに接続します。個人ユーザーはアカウント登録でQwenリアルタイムモデルを無料で利用できます。
+既定のファームウェアは [xiaozhi.me](https://xiaozhi.me) に接続します。画面の有効化案内に従い、その後 XiaoZhi コンソールにログインしてデバイスとモデル設定を管理します。
 
-👉 [初心者向けファームウェア書き込みガイド](https://ccnphfhqs21z.feishu.cn/wiki/Zpz4wXBtdimBrLk25WdcXzxcnNS)
+画面を 1 回タップするか **BOOT** ボタンを短く押すと会話を開始します。同じ操作でもう一度、現在の会話を終了できます。
 
-### 開発環境
+## 日常操作
 
-- Cursor または VSCode
-- ESP-IDFプラグインをインストールし、SDKバージョン5.4以上を選択
-- LinuxはWindowsよりも優れており、コンパイルが速く、ドライバの問題も少ない
-- 本プロジェクトはGoogle C++コードスタイルを採用、コード提出時は準拠を確認してください
+| 行いたいこと | 操作 |
+| --- | --- |
+| 会話の開始・終了 | 画面をタップするか、**BOOT** ボタンを短く押します。 |
+| AI サービスの設定変更 | 有効化後、[xiaozhi.me](https://xiaozhi.me) コンソールへログインします。 |
+| Wi-Fi の変更 | デバイスを再起動し、起動中に **BOOT** ボタンで設定モードに入り、ホットスポット設定を完了します。 |
+| 誤った・壊れたファームウェアからの復旧 | 対応するパネル型番用の完全な USB ファームウェアパッケージを書き込み直します。 |
+| ファームウェアの更新 | パネル型番が明記された更新パッケージだけを使用し、そのリリースノートに従います。 |
+
+## XiaoZhi サービスと AI モデルの設定
+
+既定サービスでデバイスを有効化した後、[xiaozhi.me](https://xiaozhi.me) コンソールでデバイスと利用可能な AI モデルの設定を管理します。サービスの選択、利用可能なモデル、アカウント設定はパネルのファームウェアではなくコンソールで管理されます。
+
+セルフホストサービスや別のバックエンドを使う場合は、XiaoZhi プロトコルに対応したサーバーを導入し、そのサーバーの文書に従って設定してください。
+
+- [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server)（Python）
+- [xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java)（Java）
+- [xiaozhi-server-go](https://github.com/AnimeAIChat/xiaozhi-server-go)（Go）
+
+## トラブルシューティング
+
+### コンピューターがパネルを見つけられない
+
+データ通信対応 USB ケーブルを使用し、別の USB ポートも試してください。それでも表示されない場合は、お使いの OS に必要な USB シリアルドライバーをインストールしてください。
+
+### 書き込み時に接続できない
+
+USB を抜き差しして再試行してください。必要なら BOOT と Reset ボタンでダウンロードモードにしてから書き込みを開始します。
+
+### Wi-Fi に接続できない
+
+選択したネットワークが 2.4 GHz を提供していることと、パスワードが正しいことを確認してください。起動中に **BOOT** ボタンを押して設定モードへ入り、<code>Xiaozhi-xxxx</code> に接続して再設定します。
+
+### 画面が正しくない、またはタッチが反応しない
+
+誤ったファームウェアが書き込まれている可能性があります。USB で正しいパネル型番用の完全なパッケージを書き込み直してください。2 機種のファームウェアは交換できません。
+
+## ケースと画像
+
+<!-- MEDIA TODO — 最終的な取付写真と公開 3D モデルへのリンクを追加。
+     推奨パス:
+       docs/images/onx2432g028-xiaozhi-enclosure.jpg
+       docs/images/onx3248g035-xiaozhi-enclosure.jpg
+     各モデルについて、パネルを 3D プリントケースに収めた斜めからの写真を 1 枚追加。 -->
+
+デスクトップケースの写真とダウンロード可能な 3D プリントファイルは後で追加します。
+
+| モデル | 3D プリントケース |
+| --- | --- |
+| ONX2432G028 | リンク追加予定 |
+| ONX3248G035 | リンク追加予定 |
+
+## 開発者向け
+
+通常の利用には開発環境は不要です。ファームウェアを変更する場合、またはリリース済みファームウェアがない場合のみ、ソースからビルドしてください。
+
+1. VS Code または Cursor 用 ESP-IDF 拡張をインストールし、ESP-IDF 5.4 以降を使用します。
+2. プロジェクトディレクトリで ESP32-S3 ターゲットを選択し、設定を開きます。
+
+~~~sh
+idf.py set-target esp32s3
+idf.py menuconfig
+~~~
+
+3. <code>menuconfig</code> で <strong>Board Type</strong> を開き、パネルに対応する項目を 1 つだけ正確に選択します。
+
+   - 2.8 インチパネル: <strong>OpenNextion ONX2432G028</strong>
+   - 3.5 インチパネル: <strong>OpenNextion ONX3248G035</strong>
+
+   設定を保存して <code>menuconfig</code> を終了します。画面サイズが近い他のボードを選択しないでください。
+
+4. ビルドして書き込みます。
+
+~~~sh
+idf.py build
+idf.py flash monitor
+~~~
+
+ボードファイルは [main/boards/OpenNextion_ONX2432G028](main/boards/OpenNextion_ONX2432G028) と [main/boards/OpenNextion_ONX3248G035](main/boards/OpenNextion_ONX3248G035) にあります。
 
 ### 開発者ドキュメント
 
-- [カスタム開発ボードガイド](docs/custom-board.md) - シャオジーAI用のカスタム開発ボード作成方法
-- [MCPプロトコルIoT制御使用法](docs/mcp-usage.md) - MCPプロトコルでIoTデバイスを制御する方法
-- [MCPプロトコルインタラクションフロー](docs/mcp-protocol.md) - デバイス側MCPプロトコルの実装方法
-- [MQTT + UDP ハイブリッド通信プロトコルドキュメント](docs/mqtt-udp.md)
-- [詳細なWebSocket通信プロトコルドキュメント](docs/websocket.md)
+- [Custom board guide](docs/custom-board.md) — ボードの追加とハードウェアサポートの変更。
+- [MCP usage guide](docs/mcp-usage.md) と [MCP protocol](docs/mcp-protocol.md) — AI サービスへデバイス機能を公開。
+- [MQTT + UDP protocol](docs/mqtt-udp.md) と [WebSocket protocol](docs/websocket.md) — カスタムバックエンドを統合。
+- [BluFi provisioning](docs/blufi.md) — 既定のホットスポットではなく Bluetooth で Wi-Fi 設定。
 
-## 大規模モデル設定
+## 謝辞とライセンス
 
-すでにシャオジーAIチャットボットデバイスをお持ちで、公式サーバーに接続済みの場合は、[xiaozhi.me](https://xiaozhi.me) コンソールで設定できます。
+本プロジェクトは [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) に基づき、[MIT License](LICENSE) で公開されています。第三者コンポーネントには個別のライセンス表示がある場合があります。
 
-👉 [バックエンド操作ビデオチュートリアル（旧インターフェース）](https://www.bilibili.com/video/BV1jUCUY2EKM/)
+第三者ファームウェアの書き込みは、デバイス損傷やデータ損失のリスクを伴います。書き込み前に、ファームウェアがパネルの型番に一致することを確認してください。
 
-## 関連オープンソースプロジェクト
-
-個人PCでサーバーをデプロイする場合は、以下のオープンソースプロジェクトを参照してください：
-
-- [xinnan-tech/xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) Pythonサーバー
-- [joey-zhou/xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) Javaサーバー
-- [AnimeAIChat/xiaozhi-server-go](https://github.com/AnimeAIChat/xiaozhi-server-go) Golangサーバー
-- [hackers365/xiaozhi-esp32-server-golang](https://github.com/hackers365/xiaozhi-esp32-server-golang) Golangサーバー
-
-シャオジー通信プロトコルを利用した他のクライアントプロジェクト：
-
-- [huangjunsen0406/py-xiaozhi](https://github.com/huangjunsen0406/py-xiaozhi) Pythonクライアント
-- [TOM88812/xiaozhi-android-client](https://github.com/TOM88812/xiaozhi-android-client) Androidクライアント
-- [100askTeam/xiaozhi-linux](http://github.com/100askTeam/xiaozhi-linux) 百問科技提供のLinuxクライアント
-- [78/xiaozhi-sf32](https://github.com/78/xiaozhi-sf32) 思澈科技のBluetoothチップファームウェア
-- [QuecPython/solution-xiaozhiAI](https://github.com/QuecPython/solution-xiaozhiAI) 移遠提供のQuecPythonファームウェア
-
-## プロジェクトについて
-
-これはエビ兄さんがオープンソースで公開しているESP32プロジェクトで、MITライセンスのもと、誰でも無料で、商用利用も可能です。
-
-このプロジェクトを通じて、AIハードウェア開発を理解し、急速に進化する大規模言語モデルを実際のハードウェアデバイスに応用できるようになることを目指しています。
-
-ご意見やご提案があれば、いつでもIssueを提出するか、[Discord](https://discord.gg/C759fGMBcZ) または QQグループ：1011329060 にご参加ください。
-
-## スター履歴
-
-<a href="https://star-history.com/#78/xiaozhi-esp32&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date" />
- </picture>
-</a> 
+[flashing-guide]: https://ccnphfhqs21z.feishu.cn/wiki/Zpz4wXBtdimBrLk25WdcXzxcnNS
+[onx2432g028]: https://nextion.tech/wiki/onx2432g028/
+[onx3248g035]: https://nextion.tech/wiki/onx3248g035/

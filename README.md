@@ -1,190 +1,179 @@
-# An MCP-based Chatbot
+# OpenNextion XiaoZhi AI Chatbot
 
-(English | [中文](README_zh.md) | [日本語](README_ja.md))
+([English](README.md) | [中文](README_zh.md) | [日本語](README_ja.md))
 
-This project is forked from the `xiaozhi-esp32` project and has been adapted to support the OpenNextion G-series hardware: the 2.8-inch capacitive screen (ONX2432G028) and the 3.5-inch capacitive screen (ONX3248G035).
-<div style="display: flex; justify-content: space-between;">
-<img src="docs/v1/OpenNextion-ONX2432G028.jpg"  width="600">
-<img src="docs/v1/OpenNextion-ONX3248G035.jpg"  width="600">
-</div>
+Turn a supported OpenNextion ESP32-S3 touchscreen into a XiaoZhi AI voice assistant. Flash the firmware for your display, connect it to Wi-Fi, and start a conversation by touching the screen or pressing the BOOT button.
 
-#### Board Model Adaptation File Path：
-2.8-inch capacitive screen (ONX2432G028)：/main/boards/OpenNextion_ONX2432G028
-3.5-inch capacitive screen (ONX3248G035)：/main/boards/OpenNextion_ONX3248G035
+<!-- MEDIA TODO — Hero image/video. Suggested path: docs/images/opennextion-xiaozhi-hero.jpg
+     Show a powered-on OpenNextion panel in its finished desktop enclosure. Recommended width: 820 px. -->
 
-#### Product Purchase Link：
-[2.8-inch capacitive screen (ONX2432G028)](https://itead.cc/product/open-nextion-2-8-genius-series-esp32-s3-lcd-touchscreen-development-board/)
-[3.5-inch capacitive screen (ONX3248G035)](https://itead.cc/product/open-nextion-3-5-genius-series-esp32-s3-lcd-touchscreen-development-board/)
-#### Product Information：
-[2.8-inch capacitive screen (ONX2432G028)](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028)
-[3.5-inch capacitive screen (ONX3248G035)](https://github.com/OpenNextion/OpenNextion-SKU-ONX3248G035)
+<p align="center">
+  <img src="docs/v1/OpenNextion-ONX2432G028.jpg" alt="OpenNextion ONX2432G028 2.8-inch touchscreen" width="390">
+  <img src="docs/v1/OpenNextion-ONX3248G035.jpg" alt="OpenNextion ONX3248G035 3.5-inch touchscreen" width="390">
+</p>
 
-## Introduction
+> This is an OpenNextion hardware port of [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32), intended for the two panels below.
 
-👉 [Human: Give AI a camera vs AI: Instantly finds out the owner hasn't washed hair for three days【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)
+## Supported hardware
 
-👉 [Handcraft your AI girlfriend, beginner's guide【bilibili】](https://www.bilibili.com/video/BV1XnmFYLEJN/)
+| OpenNextion model | Display | Orientation | Firmware board name | Status |
+| --- | --- | --- | --- | --- |
+| [ONX2432G028][onx2432g028] | 2.8-inch capacitive touch, 240 × 320 | Portrait | <code>OpenNextion-ONX2432G028</code> | Supported |
+| [ONX3248G035][onx3248g035] | 3.5-inch capacitive touch, 320 × 480 | Portrait | <code>OpenNextion-ONX3248G035</code> | Supported |
 
-As a voice interaction entry, the XiaoZhi AI chatbot leverages the AI capabilities of large models like Qwen / DeepSeek, and achieves multi-terminal control via the MCP protocol.
+**Always use firmware made for the exact model printed on your panel. Do not flash ONX2432G028 firmware to ONX3248G035, or the other way around.**
 
-<img src="docs/mcp-based-graph.jpg" alt="Control everything via MCP" width="320">
+The port supports the display, capacitive touch, dual microphones, speaker, and Wi-Fi. It requires a 2.4 GHz Wi-Fi network.
 
-## Version Notes
+## Before you start
 
-The current v2 version is incompatible with the v1 partition table, so it is not possible to upgrade from v1 to v2 via OTA. For partition table details, see [partitions/v2/README.md](partitions/v2/README.md).
+- One supported OpenNextion panel from the table above.
+- A USB cable that carries data, not a charge-only cable.
+- A Windows, macOS, or Linux computer.
+- A 2.4 GHz Wi-Fi network. ESP32-S3 does not join a 5 GHz-only network.
+- A [xiaozhi.me](https://xiaozhi.me) account if you use the default XiaoZhi service.
 
-All hardware running v1 can be upgraded to v2 by manually flashing the firmware.
+## Quick start
 
-The stable version of v1 is 1.9.2. You can switch to v1 by running `git checkout v1`. The v1 branch will be maintained until February 2026.
+### 1. Get the matching firmware
 
-### Features Implemented
+Download the newest firmware from the project's [GitHub Releases](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases) page. The current <code>v2.2.6</code> initial-flash images are:
 
-- Wi-Fi / ML307 Cat.1 4G
-- Offline voice wake-up [ESP-SR](https://github.com/espressif/esp-sr)
-- Supports two communication protocols ([Websocket](docs/websocket.md) or MQTT+UDP)
-- Uses OPUS audio codec
-- Voice interaction based on streaming ASR + LLM + TTS architecture
-- Speaker recognition, identifies the current speaker [3D Speaker](https://github.com/modelscope/3D-Speaker)
-- OLED / LCD display, supports emoji display
-- Battery display and power management
-- Multi-language support (Chinese, English, Japanese)
-- Supports ESP32-C3, ESP32-S3, ESP32-P4 chip platforms
-- Device-side MCP for device control (Speaker, LED, Servo, GPIO, etc.)
-- Cloud-side MCP to extend large model capabilities (smart home control, PC desktop operation, knowledge search, email, etc.)
-- Customizable wake words, fonts, emojis, and chat backgrounds with online web-based editing ([Custom Assets Generator](https://github.com/78/xiaozhi-assets-generator))
+| Your panel | Download |
+| --- | --- |
+| ONX2432G028 | [<code>xiaozhi_V2.2.6_merged_ONX2432G028_en_Jarvis.bin</code>](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases/download/v2.2.6/xiaozhi_V2.2.6_merged_ONX2432G028_en_Jarvis.bin) |
+| ONX3248G035 | [<code>xiaozhi_V2.2.6_merged_ONX3248G035_en_Jarvis.bin</code>](https://github.com/OpenNextion/OpenNextion-Example-xiaozhi-esp32/releases/download/v2.2.6/xiaozhi_V2.2.6_merged_ONX3248G035_en_Jarvis.bin) |
 
-## Hardware
+Choose the file whose <code>ONX...</code> model code matches your panel. Do not use a firmware package made for another XiaoZhi board.
 
-### Breadboard DIY Practice
+### 2. Flash the panel
 
-See the Feishu document tutorial:
+<!-- MEDIA TODO — Flashing image. Suggested path: docs/images/opennextion-xiaozhi-flashing.jpg
+     Show the panel connected by USB and the flashing tool with the matching model selected. Recommended width: 620 px. -->
 
-👉 ["XiaoZhi AI Chatbot Encyclopedia"](https://ccnphfhqs21z.feishu.cn/wiki/F5krwD16viZoF0kKkvDcrZNYnhb?from=from_copylink)
+1. Connect the panel to the computer with a data-capable USB cable.
+2. Use the [beginner flashing guide][flashing-guide] to write the matching <code>.bin</code> file at address <code>0x0</code>.
+3. Wait for flashing to finish, then allow the panel to restart.
 
-Breadboard demo:
+If no serial device appears, try another USB cable or USB port first. Some cables provide power only. If the flashing tool cannot connect, enter download mode with the panel's BOOT and Reset controls, then try again.
 
-![Breadboard Demo](docs/v1/wiring2.jpg)
+### 3. Connect to Wi-Fi
 
-### Supports 70+ Open Source Hardware (Partial List)
+<!-- MEDIA TODO — Wi-Fi setup image. Suggested path: docs/images/opennextion-xiaozhi-wifi-setup.jpg
+     Show the Xiaozhi-xxxx hotspot and/or the http://192.168.4.1 setup page. Recommended width: 620 px. -->
 
-- <a href="https://oshwhub.com/li-chuang-kai-fa-ban/li-chuang-shi-zhan-pai-esp32-s3-kai-fa-ban" target="_blank" title="LiChuang ESP32-S3 Development Board">LiChuang ESP32-S3 Development Board</a>
-- <a href="https://github.com/espressif/esp-box" target="_blank" title="Espressif ESP32-S3-BOX3">Espressif ESP32-S3-BOX3</a>
-- <a href="https://docs.m5stack.com/zh_CN/core/CoreS3" target="_blank" title="M5Stack CoreS3">M5Stack CoreS3</a>
-- <a href="https://docs.m5stack.com/en/atom/Atomic%20Echo%20Base" target="_blank" title="AtomS3R + Echo Base">M5Stack AtomS3R + Echo Base</a>
-- <a href="https://gf.bilibili.com/item/detail/1108782064" target="_blank" title="Magic Button 2.4">Magic Button 2.4</a>
-- <a href="https://www.waveshare.net/shop/ESP32-S3-Touch-AMOLED-1.8.htm" target="_blank" title="Waveshare ESP32-S3-Touch-AMOLED-1.8">Waveshare ESP32-S3-Touch-AMOLED-1.8</a>
-- <a href="https://github.com/Xinyuan-LilyGO/T-Circle-S3" target="_blank" title="LILYGO T-Circle-S3">LILYGO T-Circle-S3</a>
-- <a href="https://oshwhub.com/tenclass01/xmini_c3" target="_blank" title="XiaGe Mini C3">XiaGe Mini C3</a>
-- <a href="https://oshwhub.com/movecall/cuican-ai-pendant-lights-up-y" target="_blank" title="Movecall CuiCan ESP32S3">CuiCan AI Pendant</a>
-- <a href="https://github.com/WMnologo/xingzhi-ai" target="_blank" title="WMnologo-Xingzhi-1.54">WMnologo-Xingzhi-1.54TFT</a>
-- <a href="https://www.seeedstudio.com/SenseCAP-Watcher-W1-A-p-5979.html" target="_blank" title="SenseCAP Watcher">SenseCAP Watcher</a>
-- <a href="https://www.bilibili.com/video/BV1BHJtz6E2S/" target="_blank" title="ESP-HI Low Cost Robot Dog">ESP-HI Low Cost Robot Dog</a>
+On first boot, or when the saved Wi-Fi connection cannot be used, the device starts a setup hotspot named <code>Xiaozhi-xxxx</code>.
 
-<div style="display: flex; justify-content: space-between;">
-  <a href="docs/v1/lichuang-s3.jpg" target="_blank" title="LiChuang ESP32-S3 Development Board">
-    <img src="docs/v1/lichuang-s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/espbox3.jpg" target="_blank" title="Espressif ESP32-S3-BOX3">
-    <img src="docs/v1/espbox3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/m5cores3.jpg" target="_blank" title="M5Stack CoreS3">
-    <img src="docs/v1/m5cores3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/atoms3r.jpg" target="_blank" title="AtomS3R + Echo Base">
-    <img src="docs/v1/atoms3r.jpg" width="240" />
-  </a>
-  <a href="docs/v1/magiclick.jpg" target="_blank" title="Magic Button 2.4">
-    <img src="docs/v1/magiclick.jpg" width="240" />
-  </a>
-  <a href="docs/v1/waveshare.jpg" target="_blank" title="Waveshare ESP32-S3-Touch-AMOLED-1.8">
-    <img src="docs/v1/waveshare.jpg" width="240" />
-  </a>
-  <a href="docs/v1/lilygo-t-circle-s3.jpg" target="_blank" title="LILYGO T-Circle-S3">
-    <img src="docs/v1/lilygo-t-circle-s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/xmini-c3.jpg" target="_blank" title="XiaGe Mini C3">
-    <img src="docs/v1/xmini-c3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/movecall-cuican-esp32s3.jpg" target="_blank" title="CuiCan">
-    <img src="docs/v1/movecall-cuican-esp32s3.jpg" width="240" />
-  </a>
-  <a href="docs/v1/wmnologo_xingzhi_1.54.jpg" target="_blank" title="WMnologo-Xingzhi-1.54">
-    <img src="docs/v1/wmnologo_xingzhi_1.54.jpg" width="240" />
-  </a>
-  <a href="docs/v1/sensecap_watcher.jpg" target="_blank" title="SenseCAP Watcher">
-    <img src="docs/v1/sensecap_watcher.jpg" width="240" />
-  </a>
-  <a href="docs/v1/esp-hi.jpg" target="_blank" title="ESP-HI Low Cost Robot Dog">
-    <img src="docs/v1/esp-hi.jpg" width="240" />
-  </a>
-</div>
+1. On a phone or computer, connect to the <code>Xiaozhi-xxxx</code> Wi-Fi network.
+2. Open <http://192.168.4.1> if the setup page does not open automatically.
+3. Select your 2.4 GHz home Wi-Fi network and enter its password.
+4. Save the settings and wait for the device to join Wi-Fi and continue startup.
 
-## Software
+The configuration hotspot is open. Configure the device in a trusted location and leave setup mode when finished.
 
-### Firmware Flashing
+### 4. Activate and start talking
 
-For beginners, it is recommended to use the firmware that can be flashed without setting up a development environment.
+<!-- MEDIA TODO — Activation/use image. Suggested path: docs/images/opennextion-xiaozhi-activation.jpg
+     Show the activation screen or a user starting a conversation by touch. Recommended width: 620 px. -->
 
-The firmware connects to the official [xiaozhi.me](https://xiaozhi.me) server by default. Personal users can register an account to use the Qwen real-time model for free.
+The default firmware connects to [xiaozhi.me](https://xiaozhi.me). Follow the on-screen activation prompt, then sign in to the XiaoZhi console to manage the device and model settings.
 
-👉 [Beginner's Firmware Flashing Guide](https://ccnphfhqs21z.feishu.cn/wiki/Zpz4wXBtdimBrLk25WdcXzxcnNS)
+To talk, either tap the touchscreen once or briefly press the **BOOT** button. Use the same action again to stop the current conversation.
 
-### Development Environment
+## Everyday use
 
-- Cursor or VSCode
-- Install ESP-IDF plugin, select SDK version 5.4 or above
-- Linux is better than Windows for faster compilation and fewer driver issues
-- This project uses Google C++ code style, please ensure compliance when submitting code
+| What you want to do | How |
+| --- | --- |
+| Start or stop a conversation | Tap the touchscreen, or briefly press **BOOT**. |
+| Change AI-service settings | Sign in to the [xiaozhi.me](https://xiaozhi.me) console after the device is activated. |
+| Connect to a different Wi-Fi network | Restart the device and enter Wi-Fi configuration during startup with the **BOOT** button, then complete the hotspot setup. |
+| Recover from wrong or broken firmware | Reflash a complete USB firmware package for the exact panel model. |
+| Update firmware | Use only an update package explicitly made for your panel model and follow its release notes. |
 
-### Developer Documentation
+## XiaoZhi service and model configuration
 
-- [Custom Board Guide](docs/custom-board.md) - Learn how to create custom boards for XiaoZhi AI
-- [MCP Protocol IoT Control Usage](docs/mcp-usage.md) - Learn how to control IoT devices via MCP protocol
-- [MCP Protocol Interaction Flow](docs/mcp-protocol.md) - Device-side MCP protocol implementation
-- [MQTT + UDP Hybrid Communication Protocol Document](docs/mqtt-udp.md)
-- [A detailed WebSocket communication protocol document](docs/websocket.md)
+After the device is activated on the default service, sign in to the [xiaozhi.me](https://xiaozhi.me) console to manage the device and its available AI-model settings. The service selection, model availability, and account options are managed there rather than in the panel firmware.
 
-## Large Model Configuration
+For a self-hosted service or an alternative backend, use a server compatible with the XiaoZhi protocol and configure it according to that server's documentation. Useful starting points are:
 
-If you already have a XiaoZhi AI chatbot device and have connected to the official server, you can log in to the [xiaozhi.me](https://xiaozhi.me) console for configuration.
+- [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) (Python)
+- [xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) (Java)
+- [xiaozhi-server-go](https://github.com/AnimeAIChat/xiaozhi-server-go) (Go)
 
-👉 [Backend Operation Video Tutorial (Old Interface)](https://www.bilibili.com/video/BV1jUCUY2EKM/)
+## Troubleshooting
 
-## Related Open Source Projects
+### The computer cannot find the panel
 
-For server deployment on personal computers, refer to the following open-source projects:
+Use a USB cable that supports data and try another USB port. If the board still does not appear, install the USB serial driver required by your operating system.
 
-- [xinnan-tech/xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) Python server
-- [joey-zhou/xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) Java server
-- [AnimeAIChat/xiaozhi-server-go](https://github.com/AnimeAIChat/xiaozhi-server-go) Golang server
-- [hackers365/xiaozhi-esp32-server-golang](https://github.com/hackers365/xiaozhi-esp32-server-golang) Golang server
+### Flashing cannot connect
 
-Other client projects using the XiaoZhi communication protocol:
+Disconnect and reconnect USB, then retry. If necessary, use the panel's BOOT and Reset controls to enter download mode before starting the flash again.
 
-- [huangjunsen0406/py-xiaozhi](https://github.com/huangjunsen0406/py-xiaozhi) Python client
-- [TOM88812/xiaozhi-android-client](https://github.com/TOM88812/xiaozhi-android-client) Android client
-- [100askTeam/xiaozhi-linux](http://github.com/100askTeam/xiaozhi-linux) Linux client by 100ask
-- [78/xiaozhi-sf32](https://github.com/78/xiaozhi-sf32) Bluetooth chip firmware by Sichuan
-- [QuecPython/solution-xiaozhiAI](https://github.com/QuecPython/solution-xiaozhiAI) QuecPython firmware by Quectel
+### The device cannot join Wi-Fi
 
-Custom Assets Tools:
+Confirm that the selected network provides 2.4 GHz Wi-Fi and that its password is correct. Re-enter setup by pressing **BOOT** during startup, connect to the <code>Xiaozhi-xxxx</code> hotspot, and configure the network again.
 
-- [78/xiaozhi-assets-generator](https://github.com/78/xiaozhi-assets-generator) Custom Assets Generator (Wake words, fonts, emojis, backgrounds)
+### The screen is incorrect or touch does not work
 
-## About the Project
+The wrong firmware is probably installed. Reflash a complete USB firmware package for the exact panel model. The two OpenNextion firmware targets are not interchangeable.
 
-This is an open-source ESP32 project, released under the MIT license, allowing anyone to use it for free, including for commercial purposes.
+## Enclosures and images
 
-We hope this project helps everyone understand AI hardware development and apply rapidly evolving large language models to real hardware devices.
+<!-- MEDIA TODO — Add final installation photos and public 3D-model links.
+     Suggested paths:
+       docs/images/onx2432g028-xiaozhi-enclosure.jpg
+       docs/images/onx3248g035-xiaozhi-enclosure.jpg
+     Show one angled photo per model with the panel fitted in its printed enclosure. -->
 
-If you have any ideas or suggestions, please feel free to raise Issues or join our [Discord](https://discord.gg/C759fGMBcZ) or QQ group: 994694848
+Desktop enclosure photos and downloadable 3D-print files will be added later.
 
-## Star History
+| Model | 3D-printable enclosure |
+| --- | --- |
+| ONX2432G028 | Link to be added |
+| ONX3248G035 | Link to be added |
 
-<a href="https://star-history.com/#78/xiaozhi-esp32&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=78/xiaozhi-esp32&type=Date" />
- </picture>
-</a>
+## For developers
+
+Most users do not need a development environment. Build from source only when you need to modify the firmware or release firmware is not yet available.
+
+1. Install the ESP-IDF extension for VS Code or Cursor with ESP-IDF 5.4 or later.
+2. In the project directory, select the ESP32-S3 target and open configuration:
+
+~~~sh
+idf.py set-target esp32s3
+idf.py menuconfig
+~~~
+
+3. In <code>menuconfig</code>, open <strong>Board Type</strong>, then select exactly one matching entry:
+
+   - <strong>OpenNextion ONX2432G028</strong> for the 2.8-inch panel.
+   - <strong>OpenNextion ONX3248G035</strong> for the 3.5-inch panel.
+
+   Save the configuration and exit <code>menuconfig</code>. Do not select another board with a similar screen size.
+
+4. Build and flash it:
+
+~~~sh
+idf.py build
+idf.py flash monitor
+~~~
+
+Board files are in [main/boards/OpenNextion_ONX2432G028](main/boards/OpenNextion_ONX2432G028) and [main/boards/OpenNextion_ONX3248G035](main/boards/OpenNextion_ONX3248G035). For custom hardware and protocol work, see the [custom board guide](docs/custom-board.md), [MCP usage guide](docs/mcp-usage.md), and [WebSocket protocol](docs/websocket.md).
+
+### Developer documentation
+
+- [Custom board guide](docs/custom-board.md) — add a board or modify hardware support.
+- [MCP usage guide](docs/mcp-usage.md) and [MCP protocol](docs/mcp-protocol.md) — expose device features to AI services.
+- [MQTT + UDP protocol](docs/mqtt-udp.md) and [WebSocket protocol](docs/websocket.md) — integrate a custom backend.
+- [BluFi provisioning](docs/blufi.md) — use Bluetooth-based Wi-Fi provisioning instead of the default hotspot flow.
+
+## Credits and license
+
+This project is based on [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) and is released under the [MIT License](LICENSE). Third-party components may have their own license notices.
+
+Flashing third-party firmware carries a risk of device damage or data loss. Confirm that the firmware matches your panel before installation.
+
+[flashing-guide]: https://ccnphfhqs21z.feishu.cn/wiki/Zpz4wXBtdimBrLk25WdcXzxcnNS
+[onx2432g028]: https://nextion.tech/wiki/onx2432g028/
+[onx3248g035]: https://nextion.tech/wiki/onx3248g035/
